@@ -1,0 +1,96 @@
+  private void HienThi()
+  {
+      string link = "http://localhost/kk/api/df/getList";
+      HttpWebRequest rq =  HttpWebRequest.CreateHttp(link);
+      WebResponse res = rq.GetResponse();
+      DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(SinhVien[]));
+      object data =  js.ReadObject(res.GetResponseStream());
+      SinhVien[] danhsach = (SinhVien[])data;
+      dg.DataSource = danhsach;
+  }
+
+  private void btnds_Click(object sender, EventArgs e)
+  {
+      HienThi();
+  }
+
+  private void btnTim_Click(object sender, EventArgs e)
+  {
+      string str = string.Format("?masv={0}", txtmasv.Text);
+      string link = "http://localhost/kk/api/df/getbyid"+str;
+      HttpWebRequest rq = HttpWebRequest.CreateHttp(link);
+      WebResponse res = rq.GetResponse();
+      DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(SinhVien));
+      object data = js.ReadObject(res.GetResponseStream());
+      SinhVien sv = (SinhVien)data;
+      if(sv != null)
+      {
+          txthoten.Text = sv.hoten;
+          txtDiachi.Text = sv.diachi;
+          txtDienthoai.Text = sv.dienthoai;
+          txtmalop.Text = sv.malop.ToString();
+          txtanh.Text= sv.anh;
+
+      }
+      else
+      {
+          MessageBox.Show("không có sinh viên có ma "+txtmasv.Text,"Thông báo");
+      }
+  }
+
+  private void btnThem_Click(object sender, EventArgs e)
+  {
+      string url = "http://localhost/kk/api/df/themsv";
+      var client = new WebClient();
+      var sv = new NameValueCollection();
+      sv["hoten"] = txthoten.Text;
+      sv["diachi"] = txtDiachi.Text;
+      sv["dienthoai"] = txtDienthoai.Text;
+      sv["malop"] = txtmalop.Text;
+      sv["anh"] = txtanh.Text;
+
+      var response = client.UploadValues(url, sv);
+      string msg = Encoding.UTF8.GetString(response);
+      MessageBox.Show("kết quả thêm " + msg);
+      HienThi();
+  }
+
+  private void btnEnd_Click(object sender, EventArgs e)
+  {
+      Close();
+  }
+
+  private void btnUpdate_Click(object sender, EventArgs e)
+  {
+      string url = "http://localhost/kk/api/df/sua";
+      var client= new WebClient();
+      var sv = new NameValueCollection();
+      sv["hoten"] = txthoten.Text;
+      sv["diachi"] = txtDiachi.Text;
+      sv["dienthoai"] = txtDienthoai.Text;
+      sv["malop"] = txtmalop.Text;
+      sv["anh"] = txtanh.Text;
+      sv["masv"] = txtmasv.Text;
+
+      var response = client.UploadValues(url,"PUT", sv);
+       string msg = Encoding.UTF8.GetString(response);
+      MessageBox.Show("kết quả thêm " + msg);
+      HienThi();
+  }
+
+  private void btnDelete_Click(object sender, EventArgs e)
+  {
+      string str = string.Format("?masv={0}",txtmasv.Text);
+      string url = "http://localhost/kk/api/df/xoa" + str;
+      WebRequest req = WebRequest.CreateHttp(url);
+      req.Method = "DELETE";
+      HttpWebResponse res = (HttpWebResponse)req.GetResponse();
+      if(res.StatusCode == HttpStatusCode.OK)
+      {
+          MessageBox.Show("đã xóa xong sinh viên có mã "+ txtmasv.Text,"Thông báo");
+          HienThi();
+      }
+      else
+      {
+          MessageBox.Show("có lỗi khi xóa sinh viên có mã " + txtmasv.Text, "Thông báo");
+      }
